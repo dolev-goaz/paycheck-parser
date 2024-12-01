@@ -1,6 +1,6 @@
 import pandas as pd
 from openpyxl import load_workbook
-from openpyxl.styles import Alignment
+from openpyxl.styles import Alignment, PatternFill, Font
 import os
 
 def month_str_to_period(month: str):
@@ -37,6 +37,30 @@ def centralize_cells(worksheet):
             # Set horizontal and vertical alignment to center
             cell.alignment = Alignment(horizontal="center", vertical="center")
 
+def mark_color_changes(df: pd.DataFrame, worksheet):
+    for month_column_idx in range(3, len(df.columns)):
+        
+        green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # Green fill for increased values
+        red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")    # Red fill for decreased values
+        green_font = Font(color="2C612E")
+        red_font = Font(color="9C0055")
+        
+        # First month, nothing to compare to
+        for row in worksheet.iter_rows(min_row=2, max_row=worksheet.max_row, min_col=0, max_col=month_column_idx):
+            current_value, previous_value = row[month_column_idx-1].value, row[month_column_idx-2].value
+
+            if pd.isna(previous_value):
+                continue  # Skip if no previous value (for example, the first month)
+
+            # Check if the value has increased or decreased
+            if current_value > previous_value:
+                row[month_column_idx-1].fill = green_fill  # Set green if the value increased
+                row[month_column_idx-1].font = green_font
+            elif current_value < previous_value:
+                row[month_column_idx-1].fill = red_fill  # Set red if the value decreased
+                row[month_column_idx-1].font = red_font
+
+
 
 
 def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[str, ], sheet_name="main_sheet"):
@@ -67,4 +91,7 @@ def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[st
         
         centralize_cells(worksheet)
         column_fit_width(worksheet, 'A')
+        
+        # TODO: should only color once after finished creating excel
+        mark_color_changes(df, worksheet)
         
