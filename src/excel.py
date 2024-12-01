@@ -38,7 +38,10 @@ def centralize_cells(worksheet):
             cell.alignment = Alignment(horizontal="center", vertical="center")
 
 def mark_color_changes(df: pd.DataFrame, worksheet):
-    for month_column_idx in range(3, len(df.columns)):
+    for month_column_idx in range(1, len(df.columns)):
+        # indices start from 1 dont ask me
+        
+        month_column_idx += 2 # ignore first two columns- 'component' column and first column with nothing to compare to
         
         green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # Green fill for increased values
         red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")    # Red fill for decreased values
