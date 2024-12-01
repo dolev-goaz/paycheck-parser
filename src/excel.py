@@ -6,8 +6,7 @@ import os
 def month_str_to_period(month: str):
     return pd.Period(f"20{month[-2:]}-{month[:2]}", freq="M")
 
-def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[str, ], sheet_name="main_sheet"):
-    # Load existing file or create a new DataFrame
+def open_or_create_dataframe(excel_file_path: str, sheet_name: str):
     try:
         # Load the existing workbook and the specific sheet
         workbook = load_workbook(excel_file_path)
@@ -18,6 +17,30 @@ def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[st
     except:
         workbook = None
         df = pd.DataFrame()  # If file doesn't exist, create a new DataFrame
+
+    return df
+
+def column_fit_width(worksheet, column_id: str):
+    component_column = worksheet[column_id]
+    max_length = 0
+    for cell in component_column:
+        try:
+            if len(str(cell.value)) > max_length:
+                max_length = len(str(cell.value))
+        except:
+            pass
+    worksheet.column_dimensions[column_id].width = max_length + 2 # padding
+
+def centralize_cells(worksheet):
+    for row in worksheet.iter_rows():
+        for cell in row:
+            # Set horizontal and vertical alignment to center
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+
+
+def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[str, ], sheet_name="main_sheet"):
+    df = open_or_create_dataframe(excel_file_path, sheet_name)
     
     df.columns = pd.to_datetime(df.columns).to_period("M")
     month_period = month_str_to_period(month)
@@ -41,9 +64,7 @@ def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[st
         df.to_excel(writer, sheet_name=sheet_name)
         # Align all cells in the sheet to the center
         worksheet = writer.sheets[sheet_name]  # Get the worksheet object
-        for row in worksheet.iter_rows():
-            for cell in row:
-                # Set horizontal and vertical alignment to center
-                cell.alignment = Alignment(horizontal="center", vertical="center")
-
+        
+        centralize_cells(worksheet)
+        column_fit_width(worksheet, 'A')
         
