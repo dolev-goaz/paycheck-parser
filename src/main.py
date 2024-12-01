@@ -32,8 +32,6 @@ for month, path in files.items():
     page = doc[0]
     d = {line[0]: line[-1] for line in read_rects(page, payment_rect)}
     update_paycheck_log(OUTPUT_FILE_PATH, month, d)
-    # TODO: new month overrides older month
-    break
 
 # out.write('------------------------------------------------\n')
 # for line in read_rects(page, clean_rect):
