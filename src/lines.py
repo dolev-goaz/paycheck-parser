@@ -1,5 +1,5 @@
 
-def split_by_lines(words):
+def split_by_lines(words) -> list[list[str]]:
     # Group words into lines based on vertical (y0) proximity
     words = sorted(words, key=lambda w: (round(w[1], 1), -round(w[2], 1)))  # Sort by y0 and x0
     lines = []
@@ -25,7 +25,7 @@ def split_by_lines(words):
     
     return lines
 
-def join_underscores_star(line: list[str]):
+def join_underscores_star(line: list[str]) -> list[str]:
     result = []
     i = 0
     while i < len(line):
