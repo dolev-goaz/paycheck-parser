@@ -39,7 +39,9 @@ def centralize_cells(worksheet):
             # Set horizontal and vertical alignment to center
             cell.alignment = Alignment(horizontal="center", vertical="center")
 
-def mark_color_changes(df: pd.DataFrame, worksheet):
+def mark_color_changes(excel_file_path: str, sheet_name = DEFAULT_SHEET_NAME):
+    df, workbook = open_or_create_dataframe(excel_file_path, sheet_name)
+    worksheet = workbook[sheet_name]
     for month_column_idx in range(1, len(df.columns)):
         # indices start from 1 dont ask me
         
@@ -64,6 +66,7 @@ def mark_color_changes(df: pd.DataFrame, worksheet):
             elif current_value < previous_value:
                 row[month_column_idx-1].fill = red_fill  # Set red if the value decreased
                 row[month_column_idx-1].font = red_font
+    workbook.save(excel_file_path)
 
 
 
@@ -93,9 +96,6 @@ def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[st
         
         centralize_cells(worksheet)
         column_fit_width(worksheet, 'A')
-        
-        # TODO: should only color once after finished creating excel
-        mark_color_changes(df, worksheet)
         
 def insert_header(excel_file_path: str, header: str, row: int, sheet_name = DEFAULT_SHEET_NAME):
     _, workbook = open_or_create_dataframe(excel_file_path, sheet_name)
