@@ -3,6 +3,8 @@ from openpyxl import load_workbook
 from openpyxl.styles import Alignment, PatternFill, Font
 import os
 
+DEFAULT_SHEET_NAME = "main_sheet"
+
 def month_str_to_period(month: str):
     return pd.Period(f"20{month[-2:]}-{month[:2]}", freq="M")
 
@@ -18,7 +20,7 @@ def open_or_create_dataframe(excel_file_path: str, sheet_name: str):
         workbook = None
         df = pd.DataFrame()  # If file doesn't exist, create a new DataFrame
 
-    return df
+    return df, workbook
 
 def column_fit_width(worksheet, column_id: str):
     component_column = worksheet[column_id]
@@ -66,8 +68,8 @@ def mark_color_changes(df: pd.DataFrame, worksheet):
 
 
 
-def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[str, ], sheet_name="main_sheet"):
-    df = open_or_create_dataframe(excel_file_path, sheet_name)
+def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[str, ], sheet_name=DEFAULT_SHEET_NAME):
+    df, _ = open_or_create_dataframe(excel_file_path, sheet_name)
     
     df.columns = pd.to_datetime(df.columns).to_period("M")
     month_period = month_str_to_period(month)
@@ -95,3 +97,16 @@ def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[st
         # TODO: should only color once after finished creating excel
         mark_color_changes(df, worksheet)
         
+def insert_header(excel_file_path: str, header: str, row: int, sheet_name = DEFAULT_SHEET_NAME):
+    _, workbook = open_or_create_dataframe(excel_file_path, sheet_name)
+    worksheet = workbook[sheet_name]
+    
+    worksheet.insert_rows(row)
+    worksheet.merge_cells(start_row=row, end_row=row, start_column=1, end_column=worksheet.max_column)
+    header_cell = worksheet.cell(row=row, column=1)
+    header_cell.value = header
+    header_cell.font = Font(bold=True, size=12)  # Make the font bold
+    header_cell.alignment = Alignment(horizontal="center", vertical="center")  # Center the text
+    header_cell.fill = PatternFill(start_color="B1A0C7", end_color="B1A0C7", fill_type="solid")    # Red fill for decreased values
+    worksheet.row_dimensions[row].height = 22
+    workbook.save(excel_file_path)
