@@ -57,7 +57,9 @@ for header, months in excel_data.items():
 offset = 1 # ignore month headers
 running_component_count_sum = offset + 1 # index starts from 1
 for rect in paycheck_rects:
+    component_count = len(get_components(rect))
+    mark_color_changes(OUTPUT_FILE_PATH, running_component_count_sum,\
+        running_component_count_sum + component_count,\
+        prefer_increasing=rect.increase)
     insert_header(OUTPUT_FILE_PATH, rect.header, running_component_count_sum)
-    components = get_components(rect)
-    running_component_count_sum += len(components) + 1 # include the header row
-mark_color_changes(OUTPUT_FILE_PATH)
+    running_component_count_sum += component_count + 1 # include the header row

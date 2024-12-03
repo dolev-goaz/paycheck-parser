@@ -39,7 +39,7 @@ def centralize_cells(worksheet):
             # Set horizontal and vertical alignment to center
             cell.alignment = Alignment(horizontal="center", vertical="center")
 
-def mark_color_changes(excel_file_path: str, sheet_name = DEFAULT_SHEET_NAME):
+def mark_color_changes(excel_file_path: str, start_row: int, end_row: int, prefer_increasing = True, sheet_name = DEFAULT_SHEET_NAME):
     df, workbook = open_or_create_dataframe(excel_file_path, sheet_name)
     worksheet = workbook[sheet_name]
     for month_column_idx in range(1, len(df.columns)):
@@ -52,8 +52,11 @@ def mark_color_changes(excel_file_path: str, sheet_name = DEFAULT_SHEET_NAME):
         green_font = Font(color="2C612E")
         red_font = Font(color="9C0055")
         
+        color_increase = [green_fill, green_font] if prefer_increasing else [red_fill, red_font]
+        color_decrease = [red_fill, red_font] if prefer_increasing else [green_fill, green_font]
+        
         # First month, nothing to compare to
-        for row in worksheet.iter_rows(min_row=2, max_row=worksheet.max_row, min_col=0, max_col=month_column_idx):
+        for row in worksheet.iter_rows(min_row=start_row, max_row=end_row, min_col=0, max_col=month_column_idx):
             current_value, previous_value = row[month_column_idx-1].value, row[month_column_idx-2].value
 
             if pd.isna(previous_value):
@@ -61,11 +64,13 @@ def mark_color_changes(excel_file_path: str, sheet_name = DEFAULT_SHEET_NAME):
 
             # Check if the value has increased or decreased
             if current_value > previous_value:
-                row[month_column_idx-1].fill = green_fill  # Set green if the value increased
-                row[month_column_idx-1].font = green_font
+                fill, font = color_increase
+                row[month_column_idx-1].fill = fill  # Set green if the value increased
+                row[month_column_idx-1].font = font
             elif current_value < previous_value:
-                row[month_column_idx-1].fill = red_fill  # Set red if the value decreased
-                row[month_column_idx-1].font = red_font
+                fill, font = color_decrease
+                row[month_column_idx-1].fill = fill  # Set red if the value decreased
+                row[month_column_idx-1].font = font
     workbook.save(excel_file_path)
 
 
