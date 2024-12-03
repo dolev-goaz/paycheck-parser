@@ -115,3 +115,29 @@ def insert_header(excel_file_path: str, header: str, row: int, sheet_name = DEFA
     header_cell.fill = PatternFill(start_color="B1A0C7", end_color="B1A0C7", fill_type="solid")    # Red fill for decreased values
     worksheet.row_dimensions[row].height = 22
     workbook.save(excel_file_path)
+
+
+
+def add_total_rows(excel_file_path: str, start_column: int, end_column: int, sum_ranges: list[tuple[int, int, bool]], sum_row_start: int, sheet_name = DEFAULT_SHEET_NAME):
+    _, workbook = open_or_create_dataframe(excel_file_path, sheet_name)
+    worksheet = workbook[sheet_name]
+    for i in range(start_column, end_column):
+        letter = chr(ord('A') + i) # 1 to ignore the leftmost col, representing components
+        sum = "".join(f"{'+' if increase else '-'}SUM({letter}{start}:{letter}{end})" for start, end, increase in sum_ranges)
+        sum_positive = "".join(f"+SUM({letter}{start}:{letter}{end})" for start, end, increase in sum_ranges if increase)
+        worksheet[f'{letter}{sum_row_start}'] = f'={sum_positive}' # rough
+        worksheet[f'{letter}{sum_row_start + 1}'] = f'={sum}' # net
+    
+    # Add component cell
+    component_column_letter = chr(ord('A') + start_column - 1)
+    rough_cell = worksheet[f'{component_column_letter}{sum_row_start}']
+    rough_cell.value = "משכורת ברוטו"
+    rough_cell.font = Font(bold=True, color="FF0000")  # Bold and red text
+    rough_cell.alignment = Alignment(horizontal="center", vertical="center")  # Center alignment
+    
+    net_cell = worksheet[f'{component_column_letter}{sum_row_start + 1}']
+    net_cell.value = "משכורת נטו"
+    net_cell.font = Font(bold=True, color="FF0000")  # Bold and red text
+    net_cell.alignment = Alignment(horizontal="center", vertical="center")  # Center alignment
+    
+    workbook.save(excel_file_path)

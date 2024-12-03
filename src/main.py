@@ -1,6 +1,6 @@
 import fitz
 from read_rects import read_rects
-from excel import update_paycheck_log, insert_header, mark_color_changes
+from excel import update_paycheck_log, insert_header, mark_color_changes, add_total_rows
 from excel_rect import generate_rects, ExcelRect
 import os
 from paycheck_files import get_paychecks
@@ -63,3 +63,13 @@ for rect in paycheck_rects:
         prefer_increasing=rect.increase)
     insert_header(OUTPUT_FILE_PATH, rect.header, running_component_count_sum)
     running_component_count_sum += component_count + 1 # include the header row
+
+# add sum rows
+running_component_count_sum = offset + 1 + 1 # index starts from 1, include header
+ranges: list[tuple[int, int, bool]] = []
+for rect in paycheck_rects:
+    component_count = len(get_components(rect))
+    ranges.append((running_component_count_sum, running_component_count_sum + component_count - 1, rect.increase))
+    running_component_count_sum += component_count + 1 # include next header row
+
+add_total_rows(OUTPUT_FILE_PATH, 1, 1 + len(files), ranges, running_component_count_sum)
