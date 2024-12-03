@@ -71,9 +71,6 @@ def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[st
     
     df.columns = pd.to_datetime(df.columns).to_period("M")
     month_period = month_str_to_period(month)
-    if month_period in df.columns:
-        print(f"{month}: Nothing to update")
-        return 
     if month_period not in df.columns:
         df[month_period] = 0.0
     
