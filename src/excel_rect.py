@@ -1,0 +1,24 @@
+DETAILS_RECTS = [
+    [234.1651611328125, 184.30874633789062, 418.9469909667969, 391.8227844238281], # right rect
+    [18.012704849243164, 184.30874633789062, 202.95132446289062, 391.2220916748047] # left rect
+]
+PAYMENT_RECT = [234.1651611328125, 416.1496276855469, 418.9443054199219, 600.3687744140625]
+CLEAN_RECT = [18.012704849243164, 416.1496276855469, 202.794189453125, 600.3687744140625]
+
+PAYMENT_DIFF_RECT = [234.1651611328125, 646.8284912109375, 418.9443359375, 800.889404296875]
+CLEAN_DIFF_RECT = [18.012704849243164, 648.5716552734375, 203.37294006347656, 800.889404296875]
+
+class ExcelRect():
+    def __init__(self, rect: list[float], header: str):
+        self.rect = rect
+        self.header = header
+    
+
+def generate_rects() -> list[ExcelRect]:
+    return [
+        ExcelRect(PAYMENT_RECT, "תשלומים שוטפים"),
+        ExcelRect(PAYMENT_DIFF_RECT, "הפרשי תשלומים"),
+        ExcelRect(CLEAN_RECT, "ניכויים שוטפים"),
+        ExcelRect(CLEAN_DIFF_RECT, "הפרשי ניכויים"),
+    ]
+    
