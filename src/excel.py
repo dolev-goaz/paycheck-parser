@@ -8,6 +8,14 @@ DEFAULT_SHEET_NAME = "main_sheet"
 def month_str_to_period(month: str):
     return pd.Period(f"20{month[-2:]}-{month[:2]}", freq="M")
 
+def get_cell_letter(column: int) -> str:
+    letter_count = ord('Z') - ord('A') + 1
+    if column >= letter_count:
+        first = column % letter_count
+        second = column // letter_count
+        return chr(ord('A') + (second - 1)) + chr(ord('A') + first)
+    return chr(ord('A') + column)
+
 def open_or_create_dataframe(excel_file_path: str, sheet_name: str):
     try:
         # Load the existing workbook and the specific sheet
@@ -127,7 +135,7 @@ def add_total_rows(excel_file_path: str, start_column: int, end_column: int, sum
     _, workbook = open_or_create_dataframe(excel_file_path, sheet_name)
     worksheet = workbook[sheet_name]
     for i in range(start_column, end_column):
-        letter = chr(ord('A') + i) # 1 to ignore the leftmost col, representing components
+        letter = get_cell_letter(i)
         sum = "".join(f"{'+' if increase else '-'}SUM({letter}{start}:{letter}{end})" for start, end, increase in sum_ranges)
         sum_positive = "".join(f"+SUM({letter}{start}:{letter}{end})" for start, end, increase in sum_ranges if increase)
         set_cell_value_styled(worksheet, f'{letter}{sum_row_start}', f'={sum_positive}')  # rough
@@ -138,7 +146,7 @@ def add_total_rows(excel_file_path: str, start_column: int, end_column: int, sum
         set_cell_value_styled(worksheet, f'{letter}{sum_row_start + 2}', loss_str)  # loss
     
     # Add component cell
-    component_column_letter = chr(ord('A') + start_column - 1)
+    component_column_letter = get_cell_letter(start_column - 1)
     
     rough_cell = set_cell_value_styled(worksheet, f'{component_column_letter}{sum_row_start}', "משכורת ברוטו")
     rough_cell.font = Font(bold=True, color="FF0000")  # Bold and red text
