@@ -98,6 +98,7 @@ def update_paycheck_log(excel_file_path: str, month: str, paycheck_data: dict[st
             df.loc[component] = [0.0] * len(df.columns)  # Add new row with NaN values
         df.loc[component, month_period] = pd.to_numeric(value, errors='coerce')
     
+    df = df[sorted(df.columns)]
     # Write back to Excel
     write_mode = "a" if os.path.exists(excel_file_path) else "w"
     with pd.ExcelWriter(excel_file_path, engine="openpyxl", mode=write_mode) as writer:
