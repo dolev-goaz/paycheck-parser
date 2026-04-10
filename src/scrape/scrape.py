@@ -15,6 +15,7 @@ import time
 
 PAYCHECK_PAGE_URL = "https://www.prat.idf.il/השכר-שלי/תלוש-השכר"
 PAYCHECK_DOWNLOAD_URL_TEMPLATE = "https://www.prat.idf.il/umbraco/surface/paychecks/GetPaycheckFile?paycheckNumber=1&month={month}&year={year}&populationType=2"
+DOWNLOAD_FOLDER = "paychecks"
 def create_driver():
     appdata_local_path = os.getenv('LOCALAPPDATA')
     options = Options()
@@ -22,14 +23,6 @@ def create_driver():
     # profile to maintain session stuff like auth
     profile_name = "PaycheckScraperProfile"
     options.add_argument(f"--user-data-dir={appdata_local_path}\\Google\\Chrome\\User Data\\{profile_name}")
-
-    prefs = {
-        "download.prompt_for_download": False,
-        "download.default_directory": os.path.abspath("./my_paychecks"),
-        "download.directory_upgrade": True,
-        "safebrowsing.enabled": True
-    } 
-    options.add_experimental_option("prefs", prefs)
     show_browser = os.getenv('SHOW_BROWSER', 'true').lower() == 'true'
     if not show_browser:
         options.add_argument("--headless=new")
@@ -56,7 +49,7 @@ def download_file(driver: webdriver.Chrome, year: int, month: int, session: requ
     if 'application/pdf' not in content_type:
         raise Exception(f"Failed to download paycheck file for {month}/{year}")
 
-    download_path = os.path.abspath("./my_paychecks")
+    download_path = os.path.abspath(f"./{DOWNLOAD_FOLDER}")
     target_folder = os.path.join(download_path, str(year))
     if not os.path.exists(target_folder):
         os.makedirs(target_folder)
@@ -70,7 +63,7 @@ def download_file(driver: webdriver.Chrome, year: int, month: int, session: requ
 def download_files(driver: webdriver.Chrome):
     today = date.today()
     year = today.year
-    month = today.month
+    month = today.month - 1 # start from last month
     session = requests.Session()
     for cookie in driver.get_cookies():
         session.cookies.set(cookie['name'], cookie['value'])
